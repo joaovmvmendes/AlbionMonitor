@@ -9,8 +9,13 @@ API_URL = "https://west.albion-online-data.com/api/v2/stats/prices/T4_BAG?locati
 STATE_FILE = "last_state.json"
 
 def get_api_data():
-    response = requests.get(API_URL)
-    return response.json()
+    try:
+        response = requests.get(API_URL)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print("Erro ao obter dados da API:", e)
+        return []
 
 def load_last_state():
     if os.path.exists(STATE_FILE):
@@ -29,11 +34,24 @@ def send_telegram(message):
         "text": message,
         "parse_mode": "Markdown"
     }
-    requests.post(url, data=data)
+
+    print("BOT_TOKEN:", "set" if BOT_TOKEN else "not set")
+    print("CHAT_ID:", CHAT_ID)
+    print("Mensagem que será enviada:", message)
+
+    try:
+        response = requests.post(url, data=data)
+        print("Resposta do Telegram:", response.status_code, response.text)
+    except Exception as e:
+        print("Erro ao enviar mensagem para o Telegram:", e)
 
 def main():
     data = get_api_data()
+    print("Dados recebidos da API:", data)
+
     last_state = load_last_state()
+    print("Último estado salvo:", last_state)
+
     alertas = []
 
     for item in data:
@@ -41,11 +59,18 @@ def main():
         city = item.get("city", "Desconhecida")
         sell_price_min = item.get("sell_price_min", 0)
 
+        print(f"Item: {item_id}, Cidade: {city}, Preço Mínimo: {sell_price_min}")
+
         if item_id == "T4_BAG":
-            alertas.append(f"⚠️ O item {item_id} em {city} está com preço mínimo: {sell_price_min}")
+            alerta = f"⚠️ O item {item_id} em {city} está com preço mínimo: {sell_price_min}"
+            alertas.append(alerta)
+            print("Alerta gerado:", alerta)
 
     if alertas:
+        print("Enviando alerta para o Telegram...")
         send_telegram("\n".join(alertas))
+    else:
+        print("Nenhum alerta gerado.")
 
     save_current_state(data)
 
