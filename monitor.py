@@ -9,7 +9,7 @@ item_name = os.getenv("ITEM_NAME", "T4_BAG")
 
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-API_URL = "https://west.albion-online-data.com/api/v2/stats/prices/{item_name}}?locations=Bridgewatch&qualities=2"
+API_URL = "https://west.albion-online-data.com/api/v2/stats/prices/{item_name}?locations=Bridgewatch&qualities=2"
 
 STATE_FILE = "last_state.json"
 
