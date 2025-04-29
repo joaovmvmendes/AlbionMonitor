@@ -41,7 +41,7 @@ def main():
         city = item.get("city", "Desconhecida")
         sell_price_min = item.get("sell_price_min", 0)
 
-        if item_id = T4_BAG:
+        if item_id == T4_BAG:
             alertas.append(f"⚠️ O item {item_id} em {city} está com preço mínimo: {sell_price_min}")
 
     if alertas:
