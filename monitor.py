@@ -4,7 +4,8 @@ import os
 
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-API_URL = "https://api.suaapi.com/dados"
+API_URL = 
+    "https://west.albion-online-data.com/api/v2/stats/prices/T4_BAG?locations=Caerleon,Bridgewatch&qualities=2"
 
 STATE_FILE = "last_state.json"
 
@@ -35,15 +36,14 @@ def main():
     data = get_api_data()
 
     # Exemplo de análise
-    preco = data.get("preco", 0)
-    volume = data.get("volume", 0)
+    item = data.get("item_id", 0)
+    city = data.get("city", 0)
+    sellPriceMin = data.get("sell_price_min", 0)
 
     alertas = []
 
-    if preco > 12:
-        alertas.append(f"⚠️ Preço acima do limite: {preco}")
-    if volume < 90:
-        alertas.append(f"📉 Volume muito baixo: {volume}")
+    if item > "T4_BAG":
+        alertas.append(f"⚠️ O item {item} agora tem seu preço mínimo de venda igual à: {sellPriceMin} na cidade de {city}")
 
     if alertas:
         send_telegram("\n".join(alertas))
