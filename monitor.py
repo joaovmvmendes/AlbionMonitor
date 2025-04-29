@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import re
 
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -27,12 +28,15 @@ def save_current_state(data):
     with open(STATE_FILE, 'w') as f:
         json.dump(data, f)
 
+def escape_markdown(text):
+    return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', text)
+
 def send_telegram(message):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     data = {
         "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
+        "text": escape_markdown(message),
+        "parse_mode": "MarkdownV2"
     }
 
     print("BOT_TOKEN:", "set" if BOT_TOKEN else "not set")
