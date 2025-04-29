@@ -16,7 +16,7 @@ def load_last_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, 'r') as f:
             return json.load(f)
-    return {}
+    return []
 
 def save_current_state(data):
     with open(STATE_FILE, 'w') as f:
@@ -33,16 +33,16 @@ def send_telegram(message):
 
 def main():
     data = get_api_data()
-
-    # Exemplo de análise
-    item = data.get("item_id", 0)
-    city = data.get("city", 0)
-    sellPriceMin = data.get("sell_price_min", 0)
-
+    last_state = load_last_state()
     alertas = []
 
-    if item > "T4_BAG":
-        alertas.append(f"⚠️ O item {item} agora tem seu preço mínimo de venda igual à: {sellPriceMin} na cidade de {city}")
+    for item in data:
+        item_id = item.get("item_id", "N/A")
+        city = item.get("city", "Desconhecida")
+        sell_price_min = item.get("sell_price_min", 0)
+
+        if item_id = T4_BAG:
+            alertas.append(f"⚠️ O item {item_id} em {city} está com preço mínimo: {sell_price_min}")
 
     if alertas:
         send_telegram("\n".join(alertas))
