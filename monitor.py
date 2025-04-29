@@ -3,7 +3,7 @@ import json
 import os
 
 BOT_TOKEN = os.getenv("7843081611:AAFvQtLkRt3i28J8DM3Pruq7A0h30bKbRII")
-CHAT_ID = os.getenv("6116794414")
+CHAT_ID = os.getenv("735927731")
 API_URL = "https://west.albion-online-data.com/api/v2/stats/prices/T4_BAG?locations=Bridgewatch&qualities=2"
 
 STATE_FILE = "last_state.json"
