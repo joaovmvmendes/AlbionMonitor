@@ -1,5 +1,6 @@
-from monitors.price_checker import get_api_data, load_last_state, save_current_state, gerar_alertas
+from monitors.price_checker import get_api_data, load_last_state, save_current_stat
 from bot.telegram import send_telegram
+from alerts.generate_alerts import gerar_alertas
 
 def main():
     data = get_api_data()
