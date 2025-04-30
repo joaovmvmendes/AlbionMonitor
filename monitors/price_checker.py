@@ -35,7 +35,7 @@ def gerar_alertas(data):
 
         print(f"Item: {item_id}, Cidade: {city}, Preço Mínimo: {sell_price_min}")
 
-        if item_id == "ITEM_NAME":
+        if item_id == ITEM_NAME:
             alerta = f"⚠️ O item {item_id} em {city} está com preço mínimo: {sell_price_min}"
             alertas.append(alerta)
             print("Alerta gerado:", alerta)
