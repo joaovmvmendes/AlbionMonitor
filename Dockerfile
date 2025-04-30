@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copiar arquivos do projeto
 COPY requirements.txt .
-COPY Monitor.py ./monitor.py
+COPY monitor.py ./monitor.py
 COPY monitors/ monitors/
 COPY bot/ bot/
 
