@@ -1,8 +1,5 @@
-from dotenv import load_dotenv
 from monitors.price_checker import get_api_data, load_last_state, save_current_state, gerar_alertas
 from bot.telegram import send_telegram
-
-load_dotenv()
 
 def main():
     data = get_api_data()

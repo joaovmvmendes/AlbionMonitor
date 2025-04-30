@@ -4,10 +4,11 @@ FROM python:3.11-slim
 # Diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copiar arquivos necessários
-COPY requirements.txt ./
-COPY monitor.py ./
-COPY .env ./
+# Copiar arquivos do projeto
+COPY requirements.txt .
+COPY monitor.py ./monitor.py
+COPY monitors/ monitors/
+COPY bot/ bot/
 
 # Instalar dependências
 RUN pip install --no-cache-dir -r requirements.txt

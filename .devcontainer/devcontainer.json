@@ -2,7 +2,7 @@
 {
   "name": "AlbionMonitor DevContainer",
   "image": "python:3.11-slim",
-  "context": "..",
+  "context": ".",
   "workspaceFolder": "/app",
   "customizations": {
     "vscode": {
