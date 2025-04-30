@@ -1,12 +1,12 @@
 import requests
-import os
 
-ITEM_NAME = os.getenv("ITEM_NAME", "T4_BAG")
-API_URL = f"https://west.albion-online-data.com/api/v2/stats/prices/{ITEM_NAME}?locations=Bridgewatch&qualities=2"
+def get_api_data(api_url_template: str, item_names: list[str], cities: list[str]):
+    item_query = ",".join(item_names)
+    city_query = ",".join(cities)
+    api_url = api_url_template.format(item_names=item_query, cities=city_query)
 
-def get_api_data():
     try:
-        response = requests.get(API_URL)
+        response = requests.get(api_url)
         response.raise_for_status()
         return response.json()
     except Exception as e:

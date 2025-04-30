@@ -1,8 +1,4 @@
-import os
-
-ITEM_NAME = os.getenv("ITEM_NAME", "T4_BAG")
-
-def gerar_alertas(data):
+def gerar_alertas(data, item_name):
     alertas = []
 
     for item in data:
@@ -12,7 +8,7 @@ def gerar_alertas(data):
 
         print(f"Item: {item_id}, Cidade: {city}, Preço Mínimo: {sell_price_min}")
 
-        if item_id == ITEM_NAME:
+        if item_id == item_name:
             alerta = f"⚠️ O item {item_id} em {city} está com preço mínimo: {sell_price_min}"
             alertas.append(alerta)
             print("Alerta gerado:", alerta)
