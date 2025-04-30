@@ -5,23 +5,21 @@ import requests
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-def escape_markdown(text):
-    return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', text)
+def send_telegram(message):
+    TELEGRAM_API_URL = f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage"
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
 
-def send_telegram(message: str):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    data = {
-        "chat_id": CHAT_ID,
-        "text": escape_markdown(message),
-        "parse_mode": "MarkdownV2"
+    # Verifique se a URL e os dados estão corretos
+    print(f"Enviando mensagem para o Telegram: {message}")
+    
+    params = {
+        'chat_id': chat_id,
+        'text': message
     }
-
-    print("BOT_TOKEN:", "set" if BOT_TOKEN else "not set")
-    print("CHAT_ID:", CHAT_ID)
-    print("Mensagem que será enviada:", message)
-
+    
     try:
-        response = requests.post(url, data=data)
-        print("Resposta do Telegram:", response.status_code, response.text)
-    except Exception as e:
-        print("Erro ao enviar mensagem para o Telegram:", e)
+        response = requests.post(TELEGRAM_API_URL, data=params)
+        response.raise_for_status()
+        print("Mensagem enviada com sucesso!")  # Confirme que a resposta foi bem-sucedida
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao enviar mensagem para o Telegram: {e}")
