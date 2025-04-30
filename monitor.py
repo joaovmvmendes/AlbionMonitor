@@ -9,19 +9,19 @@ CITIES = os.getenv("CITIES", "Caerleon,Bridgewatch,Thetford,Martlock,Fortsterlin
 API_URL_TEMPLATE = "https://west.albion-online-data.com/api/v2/stats/prices/{item_name}?locations={cities}&qualities=2"
 
 def main():
-    data = get_api_data(API_URL_TEMPLATE, ITEM_NAMES, CITIES)
+    data = get_api_data(API_URL_TEMPLATE, ITEM_NAME, CITIES)
     print("Dados recebidos da API:", data)
 
     last_state = load_last_state()
     print("Último estado salvo:", last_state)
 
-    for item_name in ITEM_NAMES:
-        alertas = gerar_alertas(data, item_name)
+    alertas = gerar_alertas(data, ITEM_NAME)
+    print(f"Alertas gerados: {alertas}")  # Confirme os alertas gerados
 
-        if alertas:
-            print(f"Enviando alerta(s) para {item_name}...")
-            send_telegram("\n".join(alertas))
-        else:
-            print(f"Nenhum alerta gerado para {item_name}.")
+    if alertas:
+        print("Enviando alerta para o Telegram...")
+        send_telegram("\n".join(alertas))  # Verifique se a mensagem está sendo enviada
+    else:
+        print("Nenhum alerta gerado.")
 
     save_current_state(data)
