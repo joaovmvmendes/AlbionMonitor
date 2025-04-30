@@ -1,3 +1,7 @@
+import os
+
+ITEM_NAME = os.getenv("ITEM_NAME", "T4_BAG")
+
 def gerar_alertas(data):
     alertas = []
 
