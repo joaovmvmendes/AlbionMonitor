@@ -20,7 +20,7 @@ def main():
     last_state = load_last_state()
     print("Último estado salvo:", last_state)
 
-    alertas = gerar_alertas(all_data, ITEM_NAMES)
+    alertas = gerar_alertas(all_data, ITEM_NAMES, agrupamento="city")
     print(f"Alertas gerados: {alertas}")
 
     if alertas:
