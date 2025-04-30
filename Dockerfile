@@ -10,6 +10,7 @@ COPY monitor.py ./monitor.py
 COPY monitors/ monitors/
 COPY bot/ bot/
 COPY alerts/ alerts/
+COPY data/ data/
 
 # Instalar dependências
 RUN pip install --no-cache-dir -r requirements.txt
