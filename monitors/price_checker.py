@@ -2,8 +2,7 @@ import os
 import json
 import requests
 
-ITEM_NAME = os.getenv("ITEM_NAME", "T4_BAG")
-API_URL = f"https://west.albion-online-data.com/api/v2/stats/prices/{ITEM_NAME}?locations=Bridgewatch&qualities=2"
+API_URL = f"https://west.albion-online-data.com/api/v2/stats/prices/T4_BAG?locations=Bridgewatch&qualities=2"
 STATE_FILE = "last_state.json"
 
 def get_api_data():
