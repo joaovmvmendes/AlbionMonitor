@@ -1,39 +1,54 @@
-from collections import defaultdict
+import os
+from data.data_process import analisar_arbitragem, agrupar_por, analisar_tendencia_historica
 
-def gerar_alertas(data, item_names, agrupamento):
-    print("Iniciando a geração de alertas com agrupamento por", agrupamento)
+MIN_PROFIT_MARGIN = float(os.getenv("MIN_PROFIT_MARGIN", 0.15))
+MAX_PROFIT_MARGIN = float(os.getenv("MAX_PROFIT_MARGIN", 10))
 
-    if agrupamento not in ("city", "item"):
-        print(f"Aviso: agrupamento '{agrupamento}' não é suportado.")
-        return []
+def gerar_alertas(data, item_names, agrupamento=None, historico=None):
 
-    agrupados = defaultdict(list)
+    def _gerar_alerta_compra_e_venda(data, item_names, mensagens):
+        oportunidades = analisar_arbitragem(data, item_names, MIN_PROFIT_MARGIN, MAX_PROFIT_MARGIN)
+        if oportunidades:
+            mensagens.append(f"🔥 *Top {len(oportunidades)} oportunidades de compra e venda do dia:*")
+            for i, op in enumerate(oportunidades, start=1):
+                mensagens.append(
+                    f"{i}. *{op['item']}*\n"
+                    f"Comprar em {op['origem']} por `{op['preco_origem']}`\n"
+                    f"Vender em {op['destino']} por `{op['preco_destino']}`\n"
+                    f"Lucro: `{op['lucro']}` silver ({op['margem']:.1%})\n"
+                )
+        else:
+            mensagens.append("Nenhuma oportunidade de compra e venda com margem suficiente encontrada.")
 
-    for item in data:
-        item_id = item.get("item_id", "N/A")
-        city = item.get("city", "Desconhecida")
-        sell_price_min = item.get("sell_price_min", 0)
-        sell_price_max = item.get("sell_price_max", 0)
-        #buy_price_min = item.get("buy_price_min", 0)
-        #buy_price_max = item.get("buy_price_max", 0)
+    def _gerar_alerta_preços_itens(data, item_names, agrupamento, mensagens):
+        agrupados = agrupar_por(data, item_names, agrupamento)
+        if agrupados:
+            for chave, itens in sorted(agrupados.items()):
+                mensagens.append(f"{chave}")
+                for item in itens:
+                    mensagens.append(
+                        f"Você pode vender o item {item['item']} pelo valor mínimo de: {item['min']} via SellOrder"
+                    )
+                    mensagens.append(
+                        f"Você pode vender o item {item['item']} pelo valor máximo de: {item['max']} via SellOrder"
+                    )
+                mensagens.append("")
+    
+    def _gerar_alerta_tendencia_historica(historico, mensagens):
+        tendencias = analisar_tendencia_historica(historico, variacao_min=MIN_PROFIT_MARGIN)
 
-        if item_id in item_names and sell_price_min >= 0:
-            mensagens_item = [
-                f"Você pode vender o item {item_id} pelo valor mínimo de: {sell_price_min} via SellOrder",
-                f"Você pode vender o item {item_id} pelo valor máximo de: {sell_price_max} via SellOrder"
-            ]
-
-            chave = city.upper() if agrupamento == "city" else item_id.upper()
-            agrupados[chave].extend(mensagens_item)
-
-    if not agrupados:
-        print("Nenhum alerta gerado.")
-        return []
+        if tendencias:
+            mensagens.append("📈 *Tendências de preço nos últimos dias:*")
+            for t in tendencias[:10]:
+                direcao = "aumento" if t["variacao"] > 0 else "queda"
+                mensagens.append(
+                    f"{t['item']} em {t['cidade']}: {direcao} de "
+                    f"{t['inicio']:.0f} → {t['fim']:.0f} ({t['variacao']:.1%})"
+                )
 
     mensagens = []
-    for chave in sorted(agrupados.keys()):
-        mensagens.append(chave)  # título do grupo
-        mensagens.extend(agrupados[chave])
-        mensagens.append("")  # linha em branco entre grupos
+    _gerar_alerta_compra_e_venda(data=data, item_names=item_names, mensagens=mensagens)
+    _gerar_alerta_preços_itens(data=data, item_names=item_names, agrupamento=agrupamento, mensagens=mensagens)
+    _gerar_alerta_tendencia_historica(historico=historico, mensagens=mensagens)
 
     return mensagens
