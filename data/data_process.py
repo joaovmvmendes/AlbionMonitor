@@ -75,11 +75,15 @@ def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
     for chave, historico in historicos_por_item.items():
         item, cidade = chave.split("@")
 
-        if len(historico[0]["data"]) < 2:
+        if not historico:
             continue
 
-        preco_inicio = historico[0]["data"][-1]["avg_price"]
-        preco_fim = historico[0]["data"][0]["avg_price"]
+        historico_info = historico[0]["data"]
+        if len(historico_info) < 2:
+            continue
+
+        preco_inicio = historico_info[-1]["avg_price"]
+        preco_fim = historico_info[0]["avg_price"]
 
         if preco_inicio == 0:
             continue
