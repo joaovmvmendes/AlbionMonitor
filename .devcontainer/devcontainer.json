@@ -16,7 +16,7 @@
   "mounts": [
     "source=${localWorkspaceFolder},target=/app,type=bind"
   ],
-  "postCreateCommand": "pip install -r requirements.txt && git config --global user.name 'FredECI' && git config --global user.email 'fredeci@poli.ufrj.br'",
+  "postCreateCommand": "apt update && apt install -y make git && pip install -r requirements.txt && git config --global user.name 'FredECI' && git config --global user.email 'fredeci@poli.ufrj.br'",
   "settings": {
     "python.defaultInterpreterPath": "/usr/local/bin/python",
     "python.terminal.activateEnvironment": true

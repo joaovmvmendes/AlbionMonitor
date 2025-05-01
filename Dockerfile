@@ -12,7 +12,10 @@ COPY bot/ bot/
 COPY alerts/ alerts/
 COPY data/ data/
 
-# Instalar dependências
+# Instalar dependências do sistema
+RUN apt update && apt install -y make git gcc
+
+# Instalar dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Rodar o script
