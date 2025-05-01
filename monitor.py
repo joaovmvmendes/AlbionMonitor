@@ -4,7 +4,7 @@ from bot.telegram import send_telegram
 from alerts.generate_alerts import gerar_alertas
 import os
 
-ITEM_NAMES = os.getenv("ITEM_NAME", "T4_BAG").split(",")
+ITEM_NAMES = os.getenv("ITEM_NAME", "T4_BAG,T5_BAG,T6_BAG").split(",")
 agrupamento = os.getenv("agrupamento", "city")
 CITIES = os.getenv("CITIES", "Caerleon,Bridgewatch,Thetford,Martlock,Fortsterling,Lymhurst,Brecilien").split(",")
 
