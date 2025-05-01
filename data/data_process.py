@@ -69,3 +69,31 @@ def agrupar_por(data, item_names, agrupamento):
             })
 
     return agrupados
+
+def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
+    alertas = []
+    for chave, historico in historicos_por_item.items():
+        item, cidade = chave.split("@")
+
+        if len(historico[0]["data"]) < 2:
+            continue
+
+        preco_inicio = historico[0]["data"][-1]["avg_price"]
+        preco_fim = historico[0]["data"][0]["avg_price"]
+
+        if preco_inicio == 0:
+            continue
+
+        variacao = (preco_fim - preco_inicio) / preco_inicio
+
+        if abs(variacao) >= variacao_min:
+            alertas.append({
+                "item": item,
+                "cidade": cidade,
+                "inicio": preco_inicio,
+                "fim": preco_fim,
+                "variacao": variacao
+            })
+
+    alertas.sort(key=lambda x: abs(x["variacao"]), reverse=True)
+    return alertas

@@ -1,3 +1,4 @@
+from monitors.history_checker import get_history_data
 from monitors.price_checker import get_api_data
 from data.data_process import load_last_state, save_current_state
 from bot.telegram import send_telegram
@@ -10,6 +11,7 @@ CITIES = os.getenv("CITIES", "Caerleon,Bridgewatch,Thetford,Martlock,Fortsterlin
 
 def main():
     all_data = []
+    historicos_por_item = {}
     
     for item_name in ITEM_NAMES:
         cities_str = ",".join(CITIES)
@@ -17,11 +19,14 @@ def main():
         print(f"Buscando dados para: {item_name} nas cidades: {cities_str}")
         data = get_api_data(url)
         all_data.extend(data)
+        for cidade in CITIES:
+            chave = f"{item_name}@{cidade}"
+            historicos_por_item[chave] = get_history_data(item_name, cidade, dias=10)
 
     last_state = load_last_state()
     print("Último estado salvo:", last_state)
 
-    alertas = gerar_alertas(all_data, ITEM_NAMES, agrupamento="city")
+    alertas = gerar_alertas(all_data, ITEM_NAMES, agrupamento="city", historico=historicos_por_item)
     print(f"Alertas gerados: {alertas}")
 
     if alertas:
