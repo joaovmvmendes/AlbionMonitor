@@ -13,7 +13,7 @@ COPY alerts/ alerts/
 COPY data/ data/
 
 # Instalar dependências do sistema
-RUN apt update && apt install -y make git gcc
+RUN apt update && apt install -y make git gcc && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
