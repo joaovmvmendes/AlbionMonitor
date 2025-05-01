@@ -39,7 +39,7 @@ def gerar_alertas(data, item_names, agrupamento=None, historico=None):
 
         if tendencias:
             mensagens.append("📈 *Tendências de preço nos últimos dias:*")
-            for t in tendencias[:3]:
+            for t in tendencias[:10]:
                 direcao = "aumento" if t["variacao"] > 0 else "queda"
                 mensagens.append(
                     f"{t['item']} em {t['cidade']}: {direcao} de "
