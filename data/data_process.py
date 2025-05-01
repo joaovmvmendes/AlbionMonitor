@@ -73,7 +73,15 @@ def agrupar_por(data, item_names, agrupamento):
 def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
     alertas = []
     for chave, historico in historicos_por_item.items():
-        item, cidade = chave.split("@")
+        partes = chave.split("@")
+
+        # proteção contra chave malformada
+        if len(partes) < 2:
+            print(f"⚠️ Chave inválida para tendência histórica: {chave}")
+            continue
+
+        item = "@".join(partes[:-1])  # tudo antes do último @
+        cidade = partes[-1]           # último trecho
 
         if not historico:
             continue
