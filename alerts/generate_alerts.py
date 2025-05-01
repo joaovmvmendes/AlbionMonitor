@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-def gerar_alertas(data, item_names, agrupamento="city"):
+def gerar_alertas(data, item_names, agrupamento):
     print("Iniciando a geração de alertas com agrupamento por", agrupamento)
 
     if agrupamento not in ("city", "item"):
@@ -13,16 +13,18 @@ def gerar_alertas(data, item_names, agrupamento="city"):
         item_id = item.get("item_id", "N/A")
         city = item.get("city", "Desconhecida")
         sell_price_min = item.get("sell_price_min", 0)
+        sell_price_max = item.get("sell_price_max", 0)
+        #buy_price_min = item.get("buy_price_min", 0)
+        #buy_price_max = item.get("buy_price_max", 0)
 
-        if item_id in item_names and sell_price_min > 0:
-            mensagem = f"O item {item_id} está com preço mínimo: {sell_price_min}"
+        if item_id in item_names and sell_price_min >= 0:
+            mensagens_item = [
+                f"Você pode vender o item {item_id} pelo valor mínimo de: {sell_price_min} via SellOrder",
+                f"Você pode vender o item {item_id} pelo valor máximo de: {sell_price_max} via SellOrder"
+            ]
 
-            if agrupamento == "city":
-                chave = city.upper()
-            else:  # agrupamento == "item"
-                chave = item_id.upper()
-
-            agrupados[chefe := chave].append(mensagem)
+            chave = city.upper() if agrupamento == "city" else item_id.upper()
+            agrupados[chave].extend(mensagens_item)
 
     if not agrupados:
         print("Nenhum alerta gerado.")

@@ -5,6 +5,7 @@ from alerts.generate_alerts import gerar_alertas
 import os
 
 ITEM_NAMES = os.getenv("ITEM_NAME", "T4_BAG").split(",")
+agrupamento = os.getenv("agrupamento", "city")
 CITIES = os.getenv("CITIES", "Caerleon,Bridgewatch,Thetford,Martlock,Fortsterling,Lymhurst,Brecilien").split(",")
 
 def main():
@@ -20,7 +21,7 @@ def main():
     last_state = load_last_state()
     print("Último estado salvo:", last_state)
 
-    alertas = gerar_alertas(all_data, ITEM_NAMES, agrupamento="item")
+    alertas = gerar_alertas(all_data, ITEM_NAMES, agrupamento="city")
     print(f"Alertas gerados: {alertas}")
 
     if alertas:
