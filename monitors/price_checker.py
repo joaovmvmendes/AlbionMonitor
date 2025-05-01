@@ -1,5 +1,7 @@
 import requests
+import backoff
 
+@backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3)
 def get_api_data(url):
     print(f"Buscando dados da API na URL: {url}")
     try:
