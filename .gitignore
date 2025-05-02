@@ -1,5 +1,4 @@
 # .gitignore
-.env
 __pycache__/
 *.pyc
 last_state.json
@@ -18,3 +17,5 @@ items2.json
 import_items_details.py
 import_items_base.py
 create_items_schema.sql
+.vscode
+test_db.py
