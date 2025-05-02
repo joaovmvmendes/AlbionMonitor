@@ -17,3 +17,4 @@ import_items_base.py
 create_items_schema.sql
 .vscode
 test_db.py
+venv

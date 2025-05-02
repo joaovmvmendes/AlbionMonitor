@@ -1,15 +1,16 @@
-import requests
-import backoff
+from data_fetch.api_prices import get_item_prices_from_api
+from data.data_process import analisar_arbitragem
+from alerts.message_builder import format_arbitragem_alert
+from alerts.telegram import send_telegram_message
+import os
 
-@backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3)
-def get_api_data(url):
-    print(f"Buscando dados da API na URL: {url}")
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        print(f"Dados recebidos: {len(data)} itens")
-        return data
-    except Exception as e:
-        print("Erro ao obter dados da API:", e)
-        return []
+MIN_PROFIT_MARGIN = float(os.getenv("MIN_PROFIT_MARGIN", 0.15))
+MAX_PROFIT_MARGIN = float(os.getenv("MAX_PROFIT_MARGIN", 10))
+
+def run_price_monitor(item_names, qualidade=None):
+    for item in item_names:
+        data = get_item_prices_from_api(item, qualidade)
+        oportunidades = analisar_arbitragem(data, [item], MIN_PROFIT_MARGIN, MAX_PROFIT_MARGIN)
+        mensagens = format_arbitragem_alert(oportunidades)
+        for msg in mensagens:
+            send_telegram_message(msg)
