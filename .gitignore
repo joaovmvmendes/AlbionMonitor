@@ -13,3 +13,8 @@ venv
 items.xml
 import_localizations.py
 items.json
+generate_enchanted_items.py
+items2.json
+import_items_details.py
+import_items_base.py
+create_items_schema.sql
