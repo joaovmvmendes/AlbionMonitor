@@ -43,7 +43,9 @@ def analisar_arbitragem(data, item_names, min_margin=0.15, max_margin=1.0):
                 "preco_origem": preco_origem,
                 "preco_destino": preco_destino,
                 "lucro": lucro,
-                "margem": margem_lucro
+                "margem": margem_lucro,
+                "quality": origem.get("quality", 1)
+
             })
 
     oportunidades.sort(key=lambda x: x["margem"], reverse=True)
