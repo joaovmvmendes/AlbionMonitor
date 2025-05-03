@@ -1,29 +1,33 @@
-name: Albion Monitor
+name: Monitor Albion Items
 
 on:
   schedule:
-    - cron: "0 * * * *" # Executar a cada hora
+    - cron: "0 * * * *" # Executa a cada hora (UTC)
   workflow_dispatch: # Permite execução manual
 
 jobs:
-  monitor:
+  run-monitor:
     runs-on: ubuntu-latest
 
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      MIN_PROFIT_MARGIN: 0.15
+      MAX_PROFIT_MARGIN: 10
+
     steps:
-      - name: Clonar repositório
+      - name: 📥 Clonar repositório
         uses: actions/checkout@v3
 
-      - name: Instalar Docker
-        uses: docker/setup-buildx-action@v3
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-      - name: Build Docker image
-        run: docker build -t albion-monitor .
-
-      - name: Executar container
+      - name: 📦 Instalar dependências
         run: |
-          docker run \
-            --env TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} \
-            --env TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }} \
-            --env ITEM_NAME="T4_BAG,T5_BAG,T6_BAG" \
-            --env CITIES="Caerleon,Bridgewatch,Thetford,Martlock,Fortsterling,Lymhurst,Brecilien" \
-            albion-monitor
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🚀 Executar monitoramento
+        run: python monitor.py

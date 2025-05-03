@@ -1,22 +1,21 @@
-import os
 import requests
+from config.settings import TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
 
-BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+def send_telegram_message(message):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("❌ TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID não configurado no .env.")
+        return
 
-if not BOT_TOKEN or not CHAT_ID:
-    raise EnvironmentError("Variáveis TELEGRAM_TOKEN e TELEGRAM_CHAT_ID não definidas.")
-
-def send_telegram_message(message: str, parse_mode: str = "Markdown") -> None:
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
-        "chat_id": CHAT_ID,
+        "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
-        "parse_mode": parse_mode
+        "parse_mode": "Markdown"
     }
 
     try:
-        response = requests.post(url, data=payload)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print(f"Erro ao enviar mensagem: {e}")
+        resp = requests.post(url, json=payload, timeout=5)
+        resp.raise_for_status()
+        print("✅ Mensagem enviada com sucesso!")
+    except Exception as e:
+        print(f"❌ Erro ao enviar mensagem: {e}")

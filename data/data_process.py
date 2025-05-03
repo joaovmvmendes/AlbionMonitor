@@ -46,6 +46,9 @@ def analisar_arbitragem(data, item_names, min_margin=0.15, max_margin=10):
             })
 
     oportunidades.sort(key=lambda x: x["margem"], reverse=True)
+
+    print(f"[DEBUG] {item_name}: origem={origem['city']} ({preco_origem}), destino={destino['city']} ({preco_destino}), margem={margem_lucro:.2%}")
+
     return oportunidades[:3]
 
 def agrupar_por(data, item_names, agrupamento):

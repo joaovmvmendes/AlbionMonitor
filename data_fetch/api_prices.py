@@ -1,13 +1,8 @@
 import time
 import requests
+from config.constants import API_BASE_URL, CIDADES
 
-API_BASE = "https://west.albion-online-data.com/api/v2/stats/prices"
-CIDADES = [
-    "Caerleon", "Bridgewatch", "Lymhurst",
-    "Martlock", "Fort Sterling", "Thetford", "Brecilien"
-]
-
-LUCRO_MAXIMO = 10.0  # 1000%
+API_BASE = API_BASE_URL
 precos_cache = {}
 
 def get_item_prices_from_api(item_id, qualidade=None):

@@ -18,3 +18,5 @@ create_items_schema.sql
 .vscode
 test_db.py
 venv
+requirements.minimal.txt
+.env
