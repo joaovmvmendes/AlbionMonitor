@@ -1,3 +1,4 @@
+from data_fetch.api_history import fetch_item_history
 import json
 import os
 from collections import defaultdict
@@ -14,7 +15,7 @@ def save_current_state(data):
     with open(STATE_FILE, 'w') as f:
         json.dump(data, f)
 
-def analisar_arbitragem(data, item_names, min_margin=0.15, max_margin=10):
+def analisar_arbitragem(data, item_names, min_margin=0.15, max_margin=1.0):
     oportunidades = []
     for item_name in item_names:
         ofertas = [
@@ -47,8 +48,6 @@ def analisar_arbitragem(data, item_names, min_margin=0.15, max_margin=10):
 
     oportunidades.sort(key=lambda x: x["margem"], reverse=True)
 
-    print(f"[DEBUG] {item_name}: origem={origem['city']} ({preco_origem}), destino={destino['city']} ({preco_destino}), margem={margem_lucro:.2%}")
-
     return oportunidades[:3]
 
 def agrupar_por(data, item_names, agrupamento):
@@ -78,13 +77,12 @@ def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
     for chave, historico in historicos_por_item.items():
         partes = chave.split("@")
 
-        # proteção contra chave malformada
         if len(partes) < 2:
             print(f"⚠️ Chave inválida para tendência histórica: {chave}")
             continue
 
-        item = "@".join(partes[:-1])  # tudo antes do último @
-        cidade = partes[-1]           # último trecho
+        item = "@".join(partes[:-1])
+        cidade = partes[-1]
 
         if not historico:
             continue
@@ -93,10 +91,11 @@ def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
         if len(historico_info) < 2:
             continue
 
-        preco_inicio = historico_info[-1]["avg_price"]
-        preco_fim = historico_info[0]["avg_price"]
+        # 🔄 Corrigir aqui: usar prices_avg no lugar de avg_price
+        preco_inicio = historico_info[-1].get("prices_avg", 0)
+        preco_fim = historico_info[0].get("prices_avg", 0)
 
-        if preco_inicio == 0:
+        if preco_inicio == 0 or preco_fim == 0:
             continue
 
         variacao = (preco_fim - preco_inicio) / preco_inicio
@@ -112,3 +111,12 @@ def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
 
     alertas.sort(key=lambda x: abs(x["variacao"]), reverse=True)
     return alertas
+
+def calcular_media_vendas(item_id, city, dias=7):
+    historico = fetch_item_history(item_id, city, dias)
+    contagens = [d.get("item_count", 0) for d in historico if d.get("item_count", 0) > 0]
+    
+    if not contagens:
+        return None  # Retorna None se não houver dados confiáveis
+    
+    return sum(contagens) // len(contagens)

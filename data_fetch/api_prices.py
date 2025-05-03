@@ -1,6 +1,6 @@
 import time
 import requests
-from config.constants import API_BASE_URL, CIDADES
+from config.constants import API_BASE_URL, CITIES
 
 API_BASE = API_BASE_URL
 precos_cache = {}
@@ -11,7 +11,7 @@ def get_item_prices_from_api(item_id, qualidade=None):
         return precos_cache[chave]
 
     print(f"🔍 Buscando preços para: {item_id}" + (f" (Qualidade {qualidade})" if qualidade else ""))
-    params = {"locations": ",".join(CIDADES)}
+    params = {"locations": ",".join(CITIES)}
     if qualidade:
         params["qualities"] = qualidade
 
