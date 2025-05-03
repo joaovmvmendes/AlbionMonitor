@@ -1,4 +1,5 @@
 from data.data_process import calcular_media_vendas
+from config.constants import QUALITY_LABELS
 
 def format_arbitragem_alert(oportunidades):
     if not oportunidades:
@@ -14,14 +15,24 @@ def format_arbitragem_alert(oportunidades):
         else:
             linha_vendas = f"Média diária de vendas: {media} un."
 
+        if "@" in o["item"]:
+            base, enc = o["item"].split("@")
+            enc_str = f" (Encantado +{enc})"
+        else:
+            base = o["item"]
+            enc_str = ""
+
+        qualidade = o.get("quality", 1)
+        qualidade_str = QUALITY_LABELS.get(qualidade, "Normal")
+
         mensagens.append(
-            f"{idx}. *{o['item']}*\n"
+            f"{idx}. *{base}{enc_str}* — Qualidade: {qualidade_str}\n"
             f"Comprar em {o['origem']} por `{o['preco_origem']}`\n"
             f"Vender em {o['destino']} por `{o['preco_destino']}`\n"
             f"Lucro: `{o['lucro']}` silver ({o['margem']:.1%})\n"
             f"{linha_vendas}\n"
         )
-    
+
     return ["\n".join(mensagens)]
 
 def format_trend_alerts(historico, analisar_func, variacao_min=0.10):
