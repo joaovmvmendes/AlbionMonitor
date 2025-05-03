@@ -1,17 +1,15 @@
-import requests
+from data.state_manager import load_last_state, save_current_state
+from data.data_process import analisar_tendencia_historica
+from alerts.message_builder import format_trend_alerts
+from alerts.telegram import send_telegram_message
+from config.settings import MIN_PROFIT_MARGIN
 
-def get_history_data(item, city, dias=7, qualidade=2):
-    url = (
-        f"https://west.albion-online-data.com/api/v2/stats/history/{item}.json"
-        f"?locations={city}&qualities={qualidade}&time-scale=24"
-    )
-    print(f"Buscando histórico de {item} em {city} (últimos {dias} dias)...")
+def run_history_monitor():
+    historico = load_last_state()
+    mensagens = format_trend_alerts(historico, analisar_tendencia_historica, MIN_PROFIT_MARGIN)
 
-    try:
-        resp = requests.get(url)
-        resp.raise_for_status()
-        dados = resp.json()
-        return dados[:dias]
-    except Exception as e:
-        print(f"Erro ao buscar histórico de {item} em {city}: {e}")
-        return []
+    if mensagens:
+        texto_final = "\n\n".join(mensagens)
+        send_telegram_message(texto_final)
+
+    save_current_state(historico)

@@ -2,13 +2,11 @@
 __pycache__/
 *.pyc
 last_state.json
-makefile
 items.txt
 import_items.py
 items2.txt
 albion_localizations
 import_data.py
-venv
 items.xml
 import_localizations.py
 items.json
@@ -19,3 +17,6 @@ import_items_base.py
 create_items_schema.sql
 .vscode
 test_db.py
+venv
+requirements.minimal.txt
+.env
