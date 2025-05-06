@@ -3,3 +3,4 @@ python-dotenv
 backoff
 psycopg2-binary
 sqlalchemy
+matplotlib
