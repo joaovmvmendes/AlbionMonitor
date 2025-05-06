@@ -1,53 +1,59 @@
-# Nome da imagem Docker
-IMAGE_NAME = albion-monitor
-
-# Caminho para os scripts de importação
 PYTHON := python3
+IMAGE_NAME := albion-monitor
 IMPORT_DIR := imports
 
-# Comando para construir a imagem Docker
+.PHONY: build run run-local reset-db import-all import-base import-details import-localizations remount-db help
+
+# Build Docker image
 build:
 	docker build -t $(IMAGE_NAME) .
 
-# Comando para rodar o container Docker com as variáveis de ambiente
+# Run the container with environment variables
 run:
 	docker run \
 		-e ITEM_NAME="T8_SHOES_CLOTH_SET3@2" \
 		-e CITIES="Caerleon,Bridgewatch,Thetford,Martlock,Fortsterling,Lymhurst,Brecilien" \
-		-e TELEGRAM_TOKEN="7843081611:AAFvQtLkRt3i28J8DM3Pruq7A0h30bKbRII" \
-		-e TELEGRAM_CHAT_ID="6116794414" \
-		-e agrupamento="city" \
+		-e TELEGRAM_TOKEN="$(TELEGRAM_TOKEN)" \
+		-e TELEGRAM_CHAT_ID="$(TELEGRAM_CHAT_ID)" \
+		-e GROUPING="city" \
 		$(IMAGE_NAME)
 
-# Comando para construir a imagem e rodar o container em sequência
+# Build and run container locally
 run-local: build run
 
-# --- COMANDOS PARA IMPORTAÇÃO DE DADOS ---
-
-# Reset completo do banco
+# Reset the database
 reset-db:
-	@echo "🧨 Resetando banco de dados..."
+	@echo "💣 Resetting database..."
 	psql -U postgres -d albiondb -h localhost -f $(IMPORT_DIR)/create_items_schema.sql
 
-# Importa todos os dados
+# Import all item-related data
 import-all: import-base import-aux import-details import-localizations
 
 import-aux:
-	@echo "📦 Importando tabela auxiliar dos itens..."
+	@echo "📦 Importing auxiliary item tables..."
 	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_aux_tables.py
 
 import-base:
-	@echo "📦 Importando itens base..."
+	@echo "📦 Importing base item definitions..."
 	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_items_base.py
 
 import-details:
-	@echo "⚙️  Importando detalhes dos itens..."
+	@echo "⚙️  Importing item detail data..."
 	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_items_details.py
 
 import-localizations:
-	@echo "🌍 Importando localizações..."
+	@echo "🌍 Importing localization strings..."
 	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_localizations.py
 
+# Reset and repopulate the database
 remount-db: reset-db import-all
 
-.PHONY: build run run-local reset-db import-all import-base import-details import-localizations
+# Help message
+help:
+	@echo "Available Make targets:"
+	@echo "  build              - Build Docker image"
+	@echo "  run                - Run monitor in container"
+	@echo "  run-local          - Build and run locally"
+	@echo "  reset-db           - Drop and recreate DB schema"
+	@echo "  import-all         - Import all item data"
+	@echo "  remount-db         - Reset and import everything"
