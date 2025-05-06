@@ -3,7 +3,7 @@ import requests
 from config.settings import TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
 
 def send_telegram_message(message):
-    """Envia uma mensagem de texto formatada via Markdown para o Telegram."""
+    """Sends a formatted text message via Telegram using Markdown."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("❌ TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID não configurado no .env.")
         return
@@ -24,6 +24,7 @@ def send_telegram_message(message):
         print(f"❌ Erro ao enviar mensagem: {e}")
 
 def send_telegram_photo(image_path, caption=None):
+    """Sends a photo to Telegram with an optional caption."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("❌ TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID não configurado no .env.")
         return False
@@ -41,8 +42,8 @@ def send_telegram_photo(image_path, caption=None):
             "parse_mode": "Markdown"
         }
         try:
-            resp = requests.post(url, data=data, files=files, timeout=10)
-            resp.raise_for_status()
+            response = requests.post(url, data=data, files=files, timeout=10)
+            response.raise_for_status()
             print(f"✅ Imagem enviada com sucesso: {image_path}")
             return True
         except Exception as e:

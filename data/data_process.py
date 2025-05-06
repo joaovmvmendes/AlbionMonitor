@@ -15,56 +15,56 @@ def save_current_state(data):
     with open(STATE_FILE, 'w') as f:
         json.dump(data, f)
 
-def analisar_arbitragem(data, item_variants, min_margin=0.15, max_margin=1.0):
-    oportunidades = []
+def analyze_arbitrage(data, item_variants, min_margin=0.15, max_margin=1.0):
+    opportunities = []
     for item in item_variants:
         item_id = item["item_id"]
-        qualidade = item.get("quality", 1)
+        quality = item.get("quality", 1)
 
-        ofertas = [
-            d for d in data
-            if d.get("item_id") == item_id and d.get("sell_price_min", 0) > 0 and d.get("quality") == qualidade
+        offers = [
+            entry for entry in data
+            if entry.get("item_id") == item_id and entry.get("sell_price_min", 0) > 0 and entry.get("quality") == quality
         ]
 
-        print(f"\n📦 {item}: {len(ofertas)} ofertas válidas encontradas.")
+        print(f"\n📦 {item}: {len(offers)} ofertas válidas encontradas.")
 
-        if len(ofertas) < 2:
+        if len(offers) < 2:
             print(f"⚠️ Menos de duas ofertas para {item}, ignorando.")
             continue
 
-        ofertas.sort(key=lambda x: x["sell_price_min"])
-        origem = ofertas[0]
-        destino = ofertas[-1]
+        offers.sort(key=lambda x: x["sell_price_min"])
+        origin = offers[0]
+        destination = offers[-1]
 
-        preco_origem = origem["sell_price_min"]
-        preco_destino = destino["sell_price_min"]
-        lucro = preco_destino - preco_origem
-        margem_lucro = lucro / preco_origem
+        origin_price = origin["sell_price_min"]
+        destination_price = destination["sell_price_min"]
+        profit = destination_price - origin_price
+        profit_margin = profit / origin_price
 
-        print(f"💰 {item_id} → Origem: {origem['city']} ({preco_origem}) | Destino: {destino['city']} ({preco_destino}) | Margem: {margem_lucro:.2%}")
+        print(f"💰 {item_id} → Origem: {origin['city']} ({origin_price}) | Destino: {destination['city']} ({destination_price}) | Margem: {profit_margin:.2%}")
 
-        if min_margin <= margem_lucro < max_margin:
-            oportunidades.append({
+        if min_margin <= profit_margin < max_margin:
+            opportunities.append({
                 "item": item_id,
-                "origem": origem["city"],
-                "destino": destino["city"],
-                "preco_origem": preco_origem,
-                "preco_destino": preco_destino,
-                "lucro": lucro,
-                "margem": margem_lucro,
-                "quality": qualidade
+                "origem": origin["city"],
+                "destino": destination["city"],
+                "preco_origem": origin_price,
+                "preco_destino": destination_price,
+                "lucro": profit,
+                "margem": profit_margin,
+                "quality": quality
             })
 
-    print(f"\n✅ Total de oportunidades encontradas: {len(oportunidades)}")
-    oportunidades.sort(key=lambda x: x["margem"], reverse=True)
+    print(f"\n✅ Total de oportunidades encontradas: {len(opportunities)}")
+    opportunities.sort(key=lambda x: x["margem"], reverse=True)
 
-    return oportunidades  # 🔄 Retorna todas as oportunidades
+    return opportunities
 
-def agrupar_por(data, item_names, agrupamento):
-    agrupados = defaultdict(list)
+def group_by(data, item_names, group_key):
+    grouped = defaultdict(list)
 
-    if agrupamento not in ("city", "item"):
-        return agrupados
+    if group_key not in ("city", "item"):
+        return grouped
 
     for item in data:
         item_id = item.get("item_id")
@@ -73,77 +73,77 @@ def agrupar_por(data, item_names, agrupamento):
         sell_price_max = item.get("sell_price_max", 0)
 
         if item_id in item_names and sell_price_min >= 0:
-            chave = city.upper() if agrupamento == "city" else item_id.upper()
-            agrupados[chave].append({
+            key = city.upper() if group_key == "city" else item_id.upper()
+            grouped[key].append({
                 "min": sell_price_min,
                 "max": sell_price_max,
                 "item": item_id
             })
 
-    return agrupados
+    return grouped
 
-def analisar_tendencia_historica(historicos_por_item, variacao_min=0.10):
-    alertas = []
-    for chave, historico in historicos_por_item.items():
-        partes = chave.split("@")
+def analyze_historical_trend(item_histories, min_variation=0.10):
+    alerts = []
+    for key, history in item_histories.items():
+        parts = key.split("@")
 
-        if len(partes) < 2:
-            print(f"⚠️ Chave inválida para tendência histórica: {chave}")
+        if len(parts) < 2:
+            print(f"⚠️ Chave inválida para tendência histórica: {key}")
             continue
 
-        item = "@".join(partes[:-1])
-        cidade = partes[-1]
+        item = "@".join(parts[:-1])
+        city = parts[-1]
 
-        if not historico:
+        if not history:
             continue
 
-        historico_info = historico[0]["data"]
-        if len(historico_info) < 2:
+        history_info = history[0]["data"]
+        if len(history_info) < 2:
             continue
 
-        preco_inicio = historico_info[-1].get("prices_avg", 0)
-        preco_fim = historico_info[0].get("prices_avg", 0)
+        start_price = history_info[-1].get("prices_avg", 0)
+        end_price = history_info[0].get("prices_avg", 0)
 
-        if preco_inicio == 0 or preco_fim == 0:
+        if start_price == 0 or end_price == 0:
             continue
 
-        variacao = (preco_fim - preco_inicio) / preco_inicio
+        variation = (end_price - start_price) / start_price
 
-        if abs(variacao) >= variacao_min:
-            alertas.append({
+        if abs(variation) >= min_variation:
+            alerts.append({
                 "item": item,
-                "cidade": cidade,
-                "inicio": preco_inicio,
-                "fim": preco_fim,
-                "variacao": variacao
+                "cidade": city,
+                "inicio": start_price,
+                "fim": end_price,
+                "variacao": variation
             })
 
-        print(f"🔎 Verificando item: {item} em {cidade}")
-        for d in historico_info:
+        print(f"🔎 Verificando item: {item} em {city}")
+        for d in history_info:
             print(f"  📆 {d['timestamp']} | 🛒 {d.get('item_count', 0)} vendidos | 💰 preço médio: {d.get('avg_price', 0)}")
 
-    alertas.sort(key=lambda x: abs(x["variacao"]), reverse=True)
-    return alertas
+    alerts.sort(key=lambda x: abs(x["variacao"]), reverse=True)
+    return alerts
 
-def calcular_media_vendas(item_id, city, quality=1, dias=7):
-    historico = fetch_item_history(item_id, city, dias)
+def calculate_sales_average(item_id, city, quality=1, days=7):
+    history = fetch_item_history(item_id, city, days)
 
-    if not historico:
+    if not history:
         print(f"[AVISO] Nenhum histórico encontrado para {item_id} em {city} (Qualidade {quality})")
         return None
 
-    contagens = []
-    for entrada in historico:
-        if entrada.get("quality") != quality:
+    counts = []
+    for entry in history:
+        if entry.get("quality") != quality:
             continue
 
-        dias_vendas = entrada.get("data", [])[:dias]
-        contagens.extend(
-            d.get("item_count", 0) for d in dias_vendas if d.get("item_count", 0) > 0
+        daily_data = entry.get("data", [])[:days]
+        counts.extend(
+            d.get("item_count", 0) for d in daily_data if d.get("item_count", 0) > 0
         )
 
-    if not contagens:
+    if not counts:
         print(f"[AVISO] Sem contagens válidas para {item_id} em {city} (Qualidade {quality})")
         return None
 
-    return sum(contagens) // len(contagens)
+    return sum(counts) // len(counts)
