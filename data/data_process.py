@@ -1,35 +1,21 @@
-from data_fetch.api_history import fetch_item_history
-import json
-import os
+from services.albion_api import get_item_history
 from collections import defaultdict
-
-STATE_FILE = "last_state.json"
-
-def load_last_state():
-    if os.path.exists(STATE_FILE):
-        with open(STATE_FILE, 'r') as f:
-            return json.load(f)
-    return []
-
-def save_current_state(data):
-    with open(STATE_FILE, 'w') as f:
-        json.dump(data, f)
 
 def analyze_arbitrage(data, item_variants, min_margin=0.15, max_margin=1.0):
     opportunities = []
-    for item in item_variants:
-        item_id = item["item_id"]
-        quality = item.get("quality", 1)
+    for variant in item_variants:
+        item_id = variant["item_id"]
+        quality = variant.get("quality", 1)
 
         offers = [
             entry for entry in data
             if entry.get("item_id") == item_id and entry.get("sell_price_min", 0) > 0 and entry.get("quality") == quality
         ]
 
-        print(f"\n📦 {item}: {len(offers)} ofertas válidas encontradas.")
+        print(f"\n📦 {variant}: {len(offers)} ofertas válidas encontradas.")
 
         if len(offers) < 2:
-            print(f"⚠️ Menos de duas ofertas para {item}, ignorando.")
+            print(f"⚠️ Menos de duas ofertas para {variant}, ignorando.")
             continue
 
         offers.sort(key=lambda x: x["sell_price_min"])
@@ -126,7 +112,7 @@ def analyze_historical_trend(item_histories, min_variation=0.10):
     return alerts
 
 def calculate_sales_average(item_id, city, quality=1, days=7):
-    history = fetch_item_history(item_id, city, days)
+    history = get_item_history(item_id, city, days)
 
     if not history:
         print(f"[AVISO] Nenhum histórico encontrado para {item_id} em {city} (Qualidade {quality})")

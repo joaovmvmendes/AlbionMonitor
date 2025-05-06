@@ -2,10 +2,15 @@ import os
 import requests
 from config.settings import TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
 
-def send_telegram_message(message):
-    """Sends a formatted text message via Telegram using Markdown."""
+def validate_telegram_config():
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("❌ TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID não configurado no .env.")
+        return False
+    return True
+
+def send_telegram_message(message):
+    """Sends a formatted text message via Telegram using Markdown."""
+    if not validate_telegram_config():
         return
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -25,8 +30,7 @@ def send_telegram_message(message):
 
 def send_telegram_photo(image_path, caption=None):
     """Sends a photo to Telegram with an optional caption."""
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("❌ TELEGRAM_TOKEN ou TELEGRAM_CHAT_ID não configurado no .env.")
+    if not validate_telegram_config():
         return False
 
     if not image_path or not os.path.exists(image_path):
