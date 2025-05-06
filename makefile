@@ -57,3 +57,10 @@ help:
 	@echo "  reset-db           - Drop and recreate DB schema"
 	@echo "  import-all         - Import all item data"
 	@echo "  remount-db         - Reset and import everything"
+
+# Run all tests and generate clean coverage report
+coverage:
+	rm -rf htmlcov
+	coverage run -m unittest discover -s tests
+	coverage html
+	@echo "✅ Coverage report generated at htmlcov/index.html"
