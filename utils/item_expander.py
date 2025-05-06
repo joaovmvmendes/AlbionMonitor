@@ -2,17 +2,20 @@
 
 def expand_item_variants(config_items):
     """
-    Expande cada item base em variantes com encantamento e qualidade
+    Expands each base item into enchanted and quality variants.
     """
-    expanded = []
+    expanded_items = []
     for item in config_items:
-        for enchant in item["enchantments"]:
-            name = item["base_name"]
-            item_id = f"{name}@{enchant}" if enchant > 0 else name
-            expanded.append({
+        base_name = item["base_name"]
+        quality = item["quality"]
+
+        for enchantment in item["enchantments"]:
+            item_id = f"{base_name}@{enchantment}" if enchantment > 0 else base_name
+            expanded_items.append({
                 "item_id": item_id,
-                "base_name": name,
-                "enchantment": enchant,
-                "quality": item["quality"]
+                "base_name": base_name,
+                "enchantment": enchantment,
+                "quality": quality
             })
-    return expanded
+
+    return expanded_items

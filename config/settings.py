@@ -1,18 +1,19 @@
 # 📁 config/settings.py
+
 import os
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente do .env (apenas em ambiente local)
+# Load environment variables from .env (only in local environments)
 if os.path.exists(".env"):
     load_dotenv()
 
-# ⬆️ Margens de lucro para os filtros de arbitragem
+# ⬆️ Profit margin thresholds for arbitrage filtering
 MIN_PROFIT_MARGIN = float(os.getenv("MIN_PROFIT_MARGIN", 0.15))
 MAX_PROFIT_MARGIN = float(os.getenv("MAX_PROFIT_MARGIN", 10))
 
-# 📢 Configuração do Bot do Telegram
+# 📢 Telegram bot configuration
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# 📂 Arquivo local para salvar estado do bot
+# 📂 Local file to store bot state
 STATE_FILE_PATH = "last_state.json"

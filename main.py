@@ -6,8 +6,8 @@ from utils.item_expander import expand_item_variants
 load_dotenv()
 
 def main():
-    itens_expandidos = expand_item_variants(ITEM_NAMES)
-    run_price_monitor(itens_expandidos)  # Executa análise e envia os alertas
+    expanded_items = expand_item_variants(ITEM_NAMES)
+    run_price_monitor(expanded_items)  # Runs analysis and sends notifications
 
 if __name__ == "__main__":
     main()
