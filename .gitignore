@@ -1,22 +1,43 @@
-# .gitignore
+# ========== Python ==========
 __pycache__/
-*.pyc
-last_state.json
-items.txt
-import_items.py
-items2.txt
-albion_localizations
-import_data.py
-items.xml
-import_localizations.py
-items.json
-generate_enchanted_items.py
-items2.json
-import_items_details.py
-import_items_base.py
-create_items_schema.sql
-.vscode
-test_db.py
-venv
-requirements.minimal.txt
+*.py[cod]
+*.pyo
+
+# ========== Virtual Environment ==========
+venv/
+
+# ========== Environment Variables ==========
 .env
+.env.*
+
+# ========== Test and Coverage ==========
+.coverage
+htmlcov/
+.pytest_cache/
+.cache/
+
+# ========== Build ==========
+*.egg-info/
+build/
+dist/
+
+# ========== Logs and Temp ==========
+*.log
+*.tmp
+*.bak
+*.old
+
+# ========== Charts and Generated Files ==========
+charts/
+*.png
+
+# ========== IDEs and OS ==========
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# ========== Docker Runtime Files (if used) ==========
+*.pid
+*.sock

@@ -29,17 +29,17 @@ class TestDataProcess(unittest.TestCase):
                 "city": "Caerleon",
                 "quality": 1,
                 "data": [
-                    {"timestamp": "2023-01-01", "prices_avg": 800},
                     {"timestamp": "2023-01-02", "prices_avg": 1000},
+                    {"timestamp": "2023-01-01", "prices_avg": 800},
                 ]
             }]
         }
-        result = analyze_historical_trend(history, variacao_min=0.1)
+        result = analyze_historical_trend(history, min_variation=0.1)
         self.assertEqual(len(result), 1)
         self.assertGreater(result[0]["variacao"], 0)
 
     def test_analyze_historical_trend_empty(self):
-        result = analyze_historical_trend({}, variacao_min=0.1)
+        result = analyze_historical_trend({}, min_variation=0.1)
         self.assertEqual(result, [])
 
 if __name__ == "__main__":
