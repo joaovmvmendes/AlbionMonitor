@@ -1,13 +1,20 @@
 import os
+import logging
 from notifications.telegram import send_telegram_photo
 
-def send_image_and_cleanup(image_path):
+logger = logging.getLogger(__name__)
+
+def send_image_and_cleanup(image_path: str) -> None:
     """
-    Sends an image via Telegram and deletes the file after sending.
+    Sends an image to Telegram and deletes it afterward to free disk space.
+
+    Parameters:
+        image_path (str): Full path to the image to be sent.
     """
     if send_telegram_photo(image_path):
         if os.path.exists(image_path):
             try:
                 os.remove(image_path)
+                logger.debug(f"Image file removed after sending: {image_path}")
             except Exception as e:
-                print(f"⚠️ Erro ao tentar remover a imagem: {e}")
+                logger.warning(f"Failed to remove image file: {image_path} - {e}")

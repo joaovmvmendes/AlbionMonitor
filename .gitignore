@@ -30,6 +30,7 @@ dist/
 # ========== Charts and Generated Files ==========
 charts/
 *.png
+last_state.json
 
 # ========== IDEs and OS ==========
 .vscode/

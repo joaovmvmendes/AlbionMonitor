@@ -1,6 +1,15 @@
-def filter_best_offers(data):
+from typing import List, Dict
+
+def filter_best_offers(data: List[Dict]) -> List[Dict]:
     """
-    Keeps only the best (lowest) offer per item-quality-city combination.
+    Filters market data to keep only the lowest sell offer for each combination
+    of item ID, quality level, and city.
+
+    Parameters:
+        data (List[Dict]): List of market entries from the API.
+
+    Returns:
+        List[Dict]: Filtered list with only the best offers per unique item-quality-city key.
     """
     best_by_key = {}
 

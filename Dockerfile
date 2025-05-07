@@ -1,22 +1,29 @@
-# Usar imagem base com Python
+# Base image with Python 3.11 (slim variant)
 FROM python:3.11-slim
 
-# Diretório de trabalho dentro do container
+# Set working directory
 WORKDIR /app
 
-# Copiar arquivos do projeto
+# Copy requirements and install Python packages
 COPY requirements.txt .
-COPY monitor.py ./monitor.py
-COPY monitors/ monitors/
-COPY bot/ bot/
-COPY alerts/ alerts/
-COPY data/ data/
-
-# Instalar dependências do sistema
-RUN apt update && apt install -y make git gcc && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Instalar dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Rodar o script
-CMD ["python", "monitor.py"]
+# Install testing tools
+RUN pip install --no-cache-dir pytest coverage black flake8
+
+# Install system dependencies (gcc required for some packages)
+RUN apt update && apt install -y gcc && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy application source code
+COPY main.py .
+COPY config/ config/
+COPY monitors/ monitors/
+COPY notifications/ notifications/
+COPY services/ services/
+COPY utils/ utils/
+COPY data/ data/
+COPY tests/ tests/
+
+# Default command: runs main monitor
+CMD ["python", "main.py"]

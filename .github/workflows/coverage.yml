@@ -13,20 +13,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
           pip install -r requirements.txt
           pip install coverage
 
-      - name: Run tests and generate coverage report
-        run: |
-          source venv/bin/activate
-          make coverage
+      - name: Run coverage report
+        run: make coverage
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v3
