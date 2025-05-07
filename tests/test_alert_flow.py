@@ -13,11 +13,20 @@ class TestAlertFlow(unittest.TestCase):
         self, mock_analyze, mock_format, mock_send_image,
         mock_send_message, mock_remove, mock_exists
     ):
+        """
+        Ensures the alert flow calls message and image sending functions
+        when arbitrage opportunities are found.
+        """
         mock_image_path = "mock_image.png"
         mock_analyze.return_value = [{
-            "item": "T4_BAG", "origem": "Caerleon", "destino": "Bridgewatch",
-            "preco_origem": 1000, "preco_destino": 1500,
-            "lucro": 500, "margem": 0.5, "quality": 1
+            "item": "T4_BAG",
+            "origin": "Caerleon",
+            "destination": "Bridgewatch",
+            "origin_price": 1000,
+            "destination_price": 1500,
+            "profit": 500,
+            "margin": 0.5,
+            "quality": 1
         }]
         mock_format.return_value = [("Mock alert text", mock_image_path)]
 

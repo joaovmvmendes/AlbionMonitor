@@ -1,7 +1,9 @@
-# 🌐 Base URL for item price queries
+# config/constants.py
+
+# Base URL used to query item prices
 API_BASE_URL = "https://west.albion-online-data.com/api/v2/stats/prices"
 
-# 🏙️ Supported cities for market scan
+# List of supported cities to monitor market data
 CITIES = [
     "Caerleon",
     "Bridgewatch",
@@ -12,7 +14,7 @@ CITIES = [
     "Brecilien"
 ]
 
-# 📦 Items to monitor: base name, enchantment levels, and quality
+# Items to monitor: each entry defines a base item name, desired enchantment levels, and quality
 ITEM_NAMES = [
     {"base_name": "T4_BAG",     "enchantments": [0, 3],    "quality": 1},
     {"base_name": "T5_BAG",     "enchantments": [2],       "quality": 2},
@@ -22,7 +24,7 @@ ITEM_NAMES = [
     {"base_name": "T6_CAPE",    "enchantments": [3, 1],    "quality": 1},
 ]
 
-# 🏅 Quality level labels for display
+# Mapping of item quality levels to human-readable labels
 QUALITY_LABELS = {
     1: "Normal",
     2: "Good",

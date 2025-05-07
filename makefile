@@ -1,66 +1,47 @@
 PYTHON := python3
 IMAGE_NAME := albion-monitor
-IMPORT_DIR := imports
 
-.PHONY: build run run-local reset-db import-all import-base import-details import-localizations remount-db help
+.PHONY: build run run-local test lint coverage clean help
 
-# Build Docker image
+# 🔧 Build Docker image
 build:
 	docker build -t $(IMAGE_NAME) .
 
-# Run the container with environment variables
+# ▶️ Run the container with environment variables from .env
 run:
-	docker run \
-		-e ITEM_NAME="T8_SHOES_CLOTH_SET3@2" \
-		-e CITIES="Caerleon,Bridgewatch,Thetford,Martlock,Fortsterling,Lymhurst,Brecilien" \
-		-e TELEGRAM_TOKEN="$(TELEGRAM_TOKEN)" \
-		-e TELEGRAM_CHAT_ID="$(TELEGRAM_CHAT_ID)" \
-		-e GROUPING="city" \
-		$(IMAGE_NAME)
+	docker run --env-file .env $(IMAGE_NAME)
 
-# Build and run container locally
+# 🔁 Build and run locally
 run-local: build run
 
-# Reset the database
-reset-db:
-	@echo "💣 Resetting database..."
-	psql -U postgres -d albiondb -h localhost -f $(IMPORT_DIR)/create_items_schema.sql
+# 🧪 Run all unit tests
+test:
+	PYTHONPATH=. $(PYTHON) -m unittest discover -s tests
 
-# Import all item-related data
-import-all: import-base import-aux import-details import-localizations
+# 🧼 Check code formatting
+lint:
+	black . --check
+	flake8
 
-import-aux:
-	@echo "📦 Importing auxiliary item tables..."
-	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_aux_tables.py
-
-import-base:
-	@echo "📦 Importing base item definitions..."
-	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_items_base.py
-
-import-details:
-	@echo "⚙️  Importing item detail data..."
-	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_items_details.py
-
-import-localizations:
-	@echo "🌍 Importing localization strings..."
-	PYTHONPATH=. $(PYTHON) $(IMPORT_DIR)/import_localizations.py
-
-# Reset and repopulate the database
-remount-db: reset-db import-all
-
-# Help message
-help:
-	@echo "Available Make targets:"
-	@echo "  build              - Build Docker image"
-	@echo "  run                - Run monitor in container"
-	@echo "  run-local          - Build and run locally"
-	@echo "  reset-db           - Drop and recreate DB schema"
-	@echo "  import-all         - Import all item data"
-	@echo "  remount-db         - Reset and import everything"
-
-# Run all tests and generate clean coverage report
+# 🧪 Generate test coverage report
 coverage:
 	rm -rf htmlcov
 	coverage run -m unittest discover -s tests
 	coverage html
 	@echo "✅ Coverage report generated at htmlcov/index.html"
+
+# 🧹 Clean Python cache files
+clean:
+	find . -type d -name "__pycache__" -exec rm -r {} +
+	find . -type f -name "*.pyc" -delete
+
+# 📚 Help message
+help:
+	@echo "Available Make targets:"
+	@echo "  build       - Build Docker image"
+	@echo "  run         - Run container with .env variables"
+	@echo "  run-local   - Build and run locally"
+	@echo "  test        - Run all unit tests"
+	@echo "  lint        - Check code style (black + flake8)"
+	@echo "  coverage    - Generate test coverage report"
+	@echo "  clean       - Remove __pycache__ and .pyc files"

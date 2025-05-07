@@ -1,12 +1,17 @@
-def expand_item_variants(config_items):
+import logging
+from typing import List, Dict
+
+logger = logging.getLogger(__name__)
+
+def expand_item_variants(config_items: List[Dict]) -> List[Dict]:
     """
-    Expands base items into all combinations of enchantments and quality levels.
+    Expands a list of base items into all combinations of enchantments and quality levels.
 
     Parameters:
-        config_items (list): Each dict must contain 'base_name', 'enchantments', and 'quality'.
+        config_items (List[Dict]): Each dictionary must contain 'base_name', 'enchantments', and 'quality'.
 
     Returns:
-        list: List of item variant dictionaries with keys: item_id, base_name, enchantment, quality.
+        List[Dict]: Expanded item variants with keys: item_id, base_name, enchantment, quality.
     """
     expanded = []
 
@@ -16,7 +21,7 @@ def expand_item_variants(config_items):
         quality = item.get("quality")
 
         if not base_name or quality is None:
-            print(f"[AVISO] Item inválido encontrado na configuração: {item}")
+            logger.warning(f"Invalid item configuration found: {item}")
             continue
 
         for enchant in enchantments:

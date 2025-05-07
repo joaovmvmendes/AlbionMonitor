@@ -2,8 +2,8 @@ name: Run AlbionMonitor Bot
 
 on:
   schedule:
-    - cron: "0 * * * *" # Runs every hour (UTC)
-  workflow_dispatch: # Allows manual execution
+    - cron: "0 * * * *" # Every hour UTC
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,22 +15,21 @@ jobs:
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      MIN_PROFIT_MARGIN: 0.15
-      MAX_PROFIT_MARGIN: 10
+      LOG_LEVEL: INFO
+      MONITOR_INTERVAL_MINUTES: 60
 
     steps:
-      - name: 📥 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: 🐍 Set up Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🚀 Run monitor
+      - name: Run monitor
         run: python main.py

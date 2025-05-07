@@ -1,22 +1,28 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
 import os
+import logging
+from typing import List, Dict, Optional
 
-def generate_price_chart(data, item_id, city, output_dir="charts"):
+logger = logging.getLogger(__name__)
+
+def generate_price_chart(
+    data: List[Dict], item_id: str, city: str, output_dir: str = "charts"
+) -> Optional[str]:
     """
-    Generates and saves a price chart image from timestamped data.
+    Generates and saves a price chart image from timestamped price data.
 
     Parameters:
-        data (list): List of dicts with keys 'timestamp' and 'avg_price'.
-        item_id (str): Item identifier.
-        city (str): City name.
-        output_dir (str): Directory where image will be saved.
+        data (List[Dict]): List of dictionaries with 'timestamp' and 'avg_price' keys.
+        item_id (str): Unique item identifier.
+        city (str): Market city.
+        output_dir (str): Directory to save the chart image.
 
     Returns:
-        str or None: Path to the saved image, or None on failure.
+        str or None: Path to saved image, or None if generation fails.
     """
     if not data:
-        print(f"[AVISO] Sem dados para o gráfico de {item_id} em {city}")
+        logger.warning(f"No data to generate chart for {item_id} in {city}.")
         return None
 
     try:
@@ -26,9 +32,9 @@ def generate_price_chart(data, item_id, city, output_dir="charts"):
 
         plt.figure(figsize=(10, 4))
         plt.plot(timestamps, prices, marker="o", linewidth=1.5)
-        plt.title(f"📊 Variação de Preço — {item_id} em {city}")
-        plt.xlabel("Horário")
-        plt.ylabel("Preço médio (silver)")
+        plt.title(f"Price Trend — {item_id} in {city}")
+        plt.xlabel("Timestamp")
+        plt.ylabel("Average Price (silver)")
         plt.xticks(rotation=45)
         plt.grid(True, linestyle='--', linewidth=0.5)
         plt.tight_layout()
@@ -42,5 +48,5 @@ def generate_price_chart(data, item_id, city, output_dir="charts"):
         return path
 
     except Exception as e:
-        print(f"[ERRO] ao gerar gráfico de {item_id} em {city}: {e}")
+        logger.error(f"Error generating chart for {item_id} in {city}: {e}")
         return None
