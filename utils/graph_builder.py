@@ -26,15 +26,26 @@ def generate_price_chart(
         return None
 
     try:
+        # ✅ Filtra entradas válidas com os campos obrigatórios
+        filtered_data = [
+            entry for entry in data
+            if "timestamp" in entry and "avg_price" in entry and isinstance(entry["avg_price"], (int, float))
+        ]
+
+        if not filtered_data:
+            logger.warning(f"Filtered data is empty or invalid for {item_id} in {city}.")
+            return None
+
         os.makedirs(output_dir, exist_ok=True)
-        timestamps = [datetime.fromisoformat(entry["timestamp"]) for entry in data]
-        prices = [entry["avg_price"] for entry in data]
+
+        timestamps = [datetime.fromisoformat(entry["timestamp"]) for entry in filtered_data]
+        prices = [entry["avg_price"] for entry in filtered_data]
 
         plt.figure(figsize=(10, 4))
         plt.plot(timestamps, prices, marker="o", linewidth=1.5)
         plt.title(f"Price Trend — {item_id} in {city}")
-        plt.xlabel("Timestamp")
-        plt.ylabel("Average Price (silver)")
+        plt.xlabel("Date")
+        plt.ylabel("Avg Price (silver)")
         plt.xticks(rotation=45)
         plt.grid(True, linestyle='--', linewidth=0.5)
         plt.tight_layout()

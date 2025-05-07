@@ -1,11 +1,9 @@
 # config/settings.py
-
-import os
 from dotenv import load_dotenv
+import os
 
 # Load environment variables from .env file (only used in local development)
-if os.path.exists(".env"):
-    load_dotenv()
+load_dotenv()
 
 # Profit margin thresholds used for item filtering
 MIN_PROFIT_MARGIN = float(os.getenv("MIN_PROFIT_MARGIN", 0.15))  # Minimum profit considered viable (default: 15%)

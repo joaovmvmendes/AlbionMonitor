@@ -16,8 +16,8 @@ def build_arbitrage_text(index: int, base_name: str, enchantment: int, quality_s
     enchantment_str = f" (Enchanted +{enchantment})" if enchantment else ""
     return (
         f"{index}. *{base_name}{enchantment_str}* — Quality: {quality_str}\n"
-        f"Buy in {opportunity.get('origem')} for `{opportunity.get('preco_origem')}`\n"
-        f"Sell in {opportunity.get('destino')} for `{opportunity.get('preco_destino')}`\n"
-        f"Profit: `{opportunity.get('lucro')}` silver ({opportunity.get('margem', 0):.1%})\n"
+        f"Buy in {opportunity.get('origin')} for `{opportunity.get('origin_price')}`\n"
+        f"Sell in {opportunity.get('destination')} for `{opportunity.get('destination_price')}`\n"
+        f"Profit: `{opportunity.get('profit')}` silver ({opportunity.get('margin', 0):.1%})\n"
         f"{sales_line}\n"
     )

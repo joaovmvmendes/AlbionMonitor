@@ -25,10 +25,13 @@ lint:
 
 # 🧪 Generate test coverage report
 coverage:
+	@command -v coverage >/dev/null 2>&1 || { \
+		echo >&2 "❌ coverage is not installed. Run: pip install coverage"; exit 1; }
 	rm -rf htmlcov
 	coverage run -m unittest discover -s tests
 	coverage html
 	@echo "✅ Coverage report generated at htmlcov/index.html"
+
 
 # 🧹 Clean Python cache files
 clean:

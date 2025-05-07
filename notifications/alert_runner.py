@@ -1,57 +1,104 @@
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict
 
-from data.data_process import (
-    analyze_arbitrage,
-    group_by,
-    analyze_historical_trend
-)
-from notifications.message_builder import (
-    format_arbitrage_alerts,
-    format_trend_alerts
-)
-from notifications.telegram import send_telegram_message
-from utils.media import send_image_and_cleanup
-from config.settings import MIN_PROFIT_MARGIN, MAX_PROFIT_MARGIN
+from config.constants import QUALITY_LABELS
+from notifications.telegram import send_telegram_message, send_telegram_photo
+from data.data_process import calculate_sales_average
+from utils.graph_builder import generate_price_chart
+from utils.text_format import build_arbitrage_text
 
 logger = logging.getLogger(__name__)
 
+
 def run_alerts(
-    data: List[Dict],
+    filtered_market_data: List[Dict],
     item_variants: List[Dict],
-    group_by_key: Optional[str] = None,
-    history: Optional[Dict] = None
+    history: Dict[str, Dict]
 ) -> None:
     """
-    Executes alert logic for arbitrage opportunities and price trends.
-
-    Parameters:
-        data (List[Dict]): Filtered market data entries.
-        item_variants (List[Dict]): List of item variants with IDs and quality.
-        group_by_key (Optional[str]): Not used in current version (reserved for future).
-        history (Optional[Dict]): Historical market data for trend analysis.
+    For each monitored item, generate and send:
+    - A formatted arbitrage message with quality, enchantment, cities and profit
+    - A chart showing historical price variation in the selling city
     """
-    logger.info("🔔 Starting arbitrage alert analysis...")
-    try:
-        opportunities = analyze_arbitrage(data, item_variants, MIN_PROFIT_MARGIN, MAX_PROFIT_MARGIN)
-        alerts = format_arbitrage_alerts(opportunities)
 
-        for text, image_path in alerts:
-            send_telegram_message(text)
-            if image_path:
-                send_image_and_cleanup(image_path)
+    logger.info("📦 Starting alert generation per item...")
 
-        logger.info(f"✅ {len(alerts)} arbitrage alerts sent.")
-    except Exception as e:
-        logger.exception(f"Error during arbitrage alert execution: {e}")
+    for idx, item in enumerate(item_variants, start=1):
+        item_id = item["item_id"]
+        quality = item.get("quality", 1)
 
-    logger.info("📉 Starting price trend alert analysis...")
-    try:
-        trend_alerts = format_trend_alerts(history or {}, analyze_historical_trend, MIN_PROFIT_MARGIN)
+        # Extract enchantment from item_id (e.g., T4_BAG@3 → enchantment 3)
+        if "@" in item_id:
+            base_name, enchantment = item_id.split("@")
+            enchantment = int(enchantment)
+        else:
+            base_name = item_id
+            enchantment = None
 
-        for msg in trend_alerts:
-            send_telegram_message(msg)
+        # Filter offers for this item and quality
+        offers = [
+            o for o in filtered_market_data
+            if o["item_id"] == item_id and o.get("quality") == quality
+        ]
 
-        logger.info(f"✅ {len(trend_alerts)} trend alerts sent.")
-    except Exception as e:
-        logger.exception(f"Error during trend alert execution: {e}")
+        if not offers:
+            logger.warning(f"No market data for item {item_id} (Q{quality})")
+            lowest_offer = highest_offer = {"city": None, "sell_price_min": None}
+        else:
+            lowest_offer = min(offers, key=lambda x: x.get("sell_price_min", float("inf")))
+            highest_offer = max(offers, key=lambda x: x.get("sell_price_min", 0))
+
+        origin_price = lowest_offer.get("sell_price_min")
+        destination_price = highest_offer.get("sell_price_min")
+
+        origin_city = lowest_offer.get("city")
+        destination_city = highest_offer.get("city")
+
+        profit = None
+        margin = 0.0
+        if origin_price and destination_price and destination_price > origin_price:
+            profit = destination_price - origin_price
+            margin = profit / origin_price
+            if margin > 10.0:
+                margin = 10.0  # Cap margin at 1000%
+
+        quality_label = QUALITY_LABELS.get(quality, "Normal")
+        avg_sales = calculate_sales_average(item_id, destination_city, quality)
+        sales_line = (
+            f"Average daily sales: {avg_sales} units"
+            if avg_sales is not None else
+            "Average daily sales: data unavailable"
+        )
+
+        opportunity_data = {
+            "item": item_id,
+            "origin": origin_city,
+            "destination": destination_city,
+            "origin_price": origin_price,
+            "destination_price": destination_price,
+            "profit": profit,
+            "margin": margin,
+            "quality": quality,
+        }
+
+        message = build_arbitrage_text(
+            index=idx,
+            base_name=base_name,
+            enchantment=enchantment,
+            quality_str=quality_label,
+            opportunity=opportunity_data,
+            sales_line=sales_line,
+        )
+
+        send_telegram_message(message)
+
+        # Generate chart using destination (selling) city
+        chart_data = history.get(f"{item_id}@{destination_city}", {}).get("data", [])
+        logger.debug(f"📊 Raw chart data for {item_id}@{destination_city}: {chart_data}")
+
+        image_path = generate_price_chart(chart_data, item_id, destination_city)
+
+        if image_path:
+            send_telegram_photo(image_path)
+
+    logger.info("✅ Alert flow finished.")
