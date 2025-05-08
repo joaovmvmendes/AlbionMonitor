@@ -17,10 +17,14 @@ def run_alerts(
 ) -> None:
     """
     For each monitored item, generate and send:
-    - A formatted arbitrage message with quality, enchantment, cities and profit
-    - A chart showing historical price variation in the selling city
-    """
+    - A formatted arbitrage message with quality, enchantment, cities, profit and average sales
+    - (Temporarily disabled) A chart showing historical price variation in the selling city
 
+    Args:
+        filtered_market_data (List[Dict]): List of filtered market offers.
+        item_variants (List[Dict]): List of item definitions with quality and IDs.
+        history (Dict[str, Dict]): Pre-fetched price history data (grouped by item@city).
+    """
     logger.info("📦 Starting alert generation per item...")
 
     for idx, item in enumerate(item_variants, start=1):
@@ -62,13 +66,22 @@ def run_alerts(
             if margin > 10.0:
                 margin = 10.0  # Cap margin at 1000%
 
-        quality_label = QUALITY_LABELS.get(quality, "Normal")
-        avg_sales = calculate_sales_average(item_id, destination_city, quality)
+        # Get average daily sales using cached history
+        history_key = f"{item_id}@{destination_city}"
+        history_cache = history.get(history_key, {}).get("data", [])
+        avg_sales = calculate_sales_average(
+            item_id,
+            destination_city,
+            quality,
+            history_cache=history_cache
+        )
         sales_line = (
             f"Average daily sales: {avg_sales} units"
             if avg_sales is not None else
             "Average daily sales: data unavailable"
         )
+
+        quality_label = QUALITY_LABELS.get(quality, "Normal")
 
         opportunity_data = {
             "item": item_id,
@@ -92,13 +105,11 @@ def run_alerts(
 
         send_telegram_message(message)
 
-        # Generate chart using destination (selling) city
-        chart_data = history.get(f"{item_id}@{destination_city}", {}).get("data", [])
-        logger.debug(f"📊 Raw chart data for {item_id}@{destination_city}: {chart_data}")
-
-        image_path = generate_price_chart(chart_data, item_id, destination_city)
-
-        if image_path:
-            send_telegram_photo(image_path)
+        # Chart generation is temporarily disabled
+        # chart_data = history_cache
+        # logger.debug(f"📊 Raw chart data for {item_id}@{destination_city}: {chart_data}")
+        # image_path = generate_price_chart(chart_data, item_id, destination_city)
+        # if image_path:
+        #     send_telegram_photo(image_path)
 
     logger.info("✅ Alert flow finished.")
