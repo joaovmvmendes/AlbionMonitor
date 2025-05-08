@@ -3,7 +3,7 @@
 # Base URL used to query item prices
 API_BASE_URL = "https://west.albion-online-data.com/api/v2/stats/prices"
 
-# List of supported cities to monitor market data
+# List of supported cities to monitor market data (DEPRECIATED)
 CITIES = [
     "Caerleon",
     "Bridgewatch",

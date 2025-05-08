@@ -2,66 +2,87 @@ import logging
 from typing import List, Dict
 from services.albion_api import get_item_prices, get_item_history
 from notifications.alert_runner import run_alerts
-from config.constants import CITIES
 from utils.filters import filter_best_offers
 
 logger = logging.getLogger(__name__)
 
 def fetch_market_data(item_variants: List[Dict]) -> List[Dict]:
     """
-    Fetches market prices for all item variants.
+    Fetches current market prices for a list of item variants.
 
-    Parameters:
-        item_variants (List[Dict]): List of items with item_id and quality.
+    Args:
+        item_variants (List[Dict]): List of dictionaries containing "item_id" and optional "quality".
 
     Returns:
-        List[Dict]: Combined market data.
+        List[Dict]: Filtered list of price data for the requested item variants.
     """
-    all_data = []
+    item_ids = list({item["item_id"] for item in item_variants})
+    logger.info(f"Fetching prices for {len(item_ids)} items in batch...")
+
+    all_prices = get_item_prices(item_ids)
+
+    filtered_prices = []
     for item in item_variants:
         item_id = item["item_id"]
         quality = item.get("quality")
-        logger.info(f"Fetching prices for: {item_id}" + (f" (Quality {quality})" if quality else ""))
-        data = get_item_prices(item_id, quality)
-        all_data.extend(data)
-    return all_data
+        matched = [
+            entry for entry in all_prices
+            if entry["item_id"] == item_id and (quality is None or entry.get("quality") == quality)
+        ]
+        filtered_prices.extend(matched)
+
+    return filtered_prices
 
 def fetch_all_history(item_variants: List[Dict], days: int = 7) -> Dict[str, Dict]:
     """
-    Fetches historical pricing data for each item variant in every configured city.
+    Fetches daily historical price data for all variants of each item.
 
-    Parameters:
-        item_variants (List[Dict]): List of items with item_id and quality.
-        days (int): Number of days to retrieve history for.
+    Args:
+        item_variants (List[Dict]): List of dictionaries with "item_id" and optional "quality".
+        days (int): Number of days of historical data to retrieve.
 
     Returns:
-        Dict[str, Dict]: History grouped by item@city.
+        Dict[str, Dict]: Dictionary of historical data grouped by item@city.
     """
-    history = {}
-    for item in item_variants:
-        item_id = item["item_id"]
-        quality = item.get("quality", 1)
+    item_ids = list({item["item_id"] for item in item_variants})
+    logger.info(f"Fetching historical price data for {len(item_ids)} items in batch...")
 
-        for city in CITIES:
-            key = f"{item_id}@{city}"
-            logger.info(f"Fetching price history: {key} (Quality {quality})")
-            data = get_item_history(item_id, city, days)
-            history[key] = {
-                "item_id": item_id,
-                "city": city,
-                "quality": quality,
-                "data": data
-            }
+    raw_data = get_item_history(item_ids, days)
+    history_data: Dict[str, Dict] = {}
+    quality_map = {item["item_id"]: item.get("quality", 1) for item in item_variants}
 
-    return history
+    for entry in raw_data:
+        item_id = entry.get("item_id")
+        city = entry.get("location")
+        quality = entry.get("quality", 1)
+
+        if not item_id or not city:
+            continue
+
+        expected_quality = quality_map.get(item_id)
+        if expected_quality is not None and expected_quality != quality:
+            continue
+
+        key = f"{item_id}@{city}"
+        history_data[key] = {
+            "item_id": item_id,
+            "city": city,
+            "quality": quality,
+            "data": [entry]
+        }
+
+    return history_data
 
 def run_price_monitor(item_variants: List[Dict]) -> None:
     """
-    Runs the main market monitoring logic:
-    - Fetch prices
-    - Filter best offers
-    - Fetch history
-    - Trigger alerts
+    Runs the full price monitoring routine:
+    - Fetches market data
+    - Filters best offers
+    - Fetches historical data
+    - Triggers alerts
+
+    Args:
+        item_variants (List[Dict]): List of item variant definitions to monitor.
     """
     logger.info("🔄 Fetching current market data...")
     market_data = fetch_market_data(item_variants)
@@ -69,8 +90,8 @@ def run_price_monitor(item_variants: List[Dict]) -> None:
     logger.info("✅ Filtering best offers...")
     filtered_data = filter_best_offers(market_data)
 
-    logger.info("📈 Fetching sales history...")
+    logger.info("📈 Fetching historical price data...")
     history = fetch_all_history(item_variants)
 
-    logger.info("🚨 Running alert logic...")
+    logger.info("🚨 Triggering alert system...")
     run_alerts(filtered_data, item_variants, history=history)
