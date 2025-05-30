@@ -1,50 +1,96 @@
-PYTHON := python3
-IMAGE_NAME := albion-monitor
+# === AlbionMonitor Makefile ===
+# Manage Docker containers, database schema, data import routines, and cleanup
 
-.PHONY: build run run-local test lint coverage clean help
+# === Container Management ===
 
-# 🔧 Build Docker image
-build:
-	docker build -t $(IMAGE_NAME) .
+start:
+	@echo "🚀 Building and starting AlbionMonitor containers..."
+	docker-compose up -d --build
+	@echo "✅ All services are up and running."
 
-# ▶️ Run the container with environment variables from .env
-run:
-	docker run --env-file .env $(IMAGE_NAME)
+stop:
+	@echo "🛑 Stopping all containers..."
+	docker-compose down
 
-# 🔁 Build and run locally
-run-local: build run
+logs:
+	docker-compose logs -f albionmonitor
 
-# 🧪 Run all unit tests
-test:
-	PYTHONPATH=. $(PYTHON) -m unittest discover -s tests
+rebuild:
+	@echo "♻️ Rebuilding all containers from scratch..."
+	docker-compose down -v --remove-orphans
+	docker-compose up -d --build
 
-# 🧼 Check code formatting
-lint:
-	black . --check
-	flake8
+shell:
+	docker exec -it albion-monitor /bin/bash
 
-# 🧪 Generate test coverage report
-coverage:
-	@command -v coverage >/dev/null 2>&1 || { \
-		echo >&2 "❌ coverage is not installed. Run: pip install coverage"; exit 1; }
-	rm -rf htmlcov
-	coverage run -m unittest discover -s tests
-	coverage html
-	@echo "✅ Coverage report generated at htmlcov/index.html"
+shell-db:
+	docker exec -it albion-postgres psql -U postgres -d albiondb
 
+# === Environment Cleanup ===
 
-# 🧹 Clean Python cache files
 clean:
-	find . -type d -name "__pycache__" -exec rm -r {} +
-	find . -type f -name "*.pyc" -delete
+	@echo "🧹 Cleaning Docker containers, images, volumes, and environment..."
+	docker-compose down -v --remove-orphans
+	docker system prune -af --volumes
+	@echo "🧼 Removing virtual environment and __pycache__..."
+	rm -rf .venv
+	find . -type d -name '__pycache__' -exec rm -rf {} +
+	@echo "✅ Full cleanup complete. Ready for a fresh start."
 
-# 📚 Help message
+reset-db:
+	@echo "🗑️ Resetting PostgreSQL database volume..."
+	docker-compose stop postgres
+	docker volume rm albion-postgres
+	docker-compose up -d postgres
+	@echo "✅ Database volume recreated. You can now re-import data or reinitialize."
+
+# === Schema Initialization ===
+
+init-db:
+	@echo "📦 Creating normalized tables from Albion schema..."
+	cat imports/schemas/item_localizations_schema.sql | docker exec -i albion-postgres psql -U postgres -d albiondb
+	@echo "✅ Schema successfully initialized."
+
+# === Imports (Core and Specialized) ===
+
+import-localization:
+	@echo "📥 Importing all base item data..."
+	docker-compose --env-file .env run --rm -e PYTHONPATH=/AlbionMonitor albionmonitor python imports/loaders/handlers/import_localizations.py
+	@echo "✅ All item data imported."
+
+# === Full Reset Routine ===
+
+reset:
+	@echo "♻️ Performing full reset: cleaning, rebuilding and importing..."
+	@$(MAKE) clean
+	sleep 10
+	@$(MAKE) start
+	sleep 10
+	@$(MAKE) init-db
+	sleep 10
+	@$(MAKE) import-localization
+	@echo "✅ Full reset completed."
+
+# === Help Message ===
+
 help:
-	@echo "Available Make targets:"
-	@echo "  build       - Build Docker image"
-	@echo "  run         - Run container with .env variables"
-	@echo "  run-local   - Build and run locally"
-	@echo "  test        - Run all unit tests"
-	@echo "  lint        - Check code style (black + flake8)"
-	@echo "  coverage    - Generate test coverage report"
-	@echo "  clean       - Remove __pycache__ and .pyc files"
+	@echo "📘 AlbionMonitor Makefile Commands:"
+	@echo ""
+	@echo " 🐳 Containers:"
+	@echo "   make start        → Build and start containers"
+	@echo "   make stop         → Stop all containers"
+	@echo "   make logs         → Tail logs from albionmonitor"
+	@echo "   make rebuild      → Rebuild all containers"
+	@echo "   make shell        → Access container shell"
+	@echo "   make shell-db     → Open PostgreSQL interactive shell"
+	@echo ""
+	@echo " 💾 Database:"
+	@echo "   make init-db      → Initialize schema using SQL file"
+	@echo "   make reset-db     → Drop and recreate DB volume"
+	@echo ""
+	@echo " 📦 Import:"
+	@echo "   make import-all   → Import all item-related data"
+	@echo "   make reset        → Clean environment and fully reimport"
+	@echo ""
+	@echo " 🧼 Cleanup:"
+	@echo "   make clean        → Remove containers, images, volumes, .venv, and __pycache__"

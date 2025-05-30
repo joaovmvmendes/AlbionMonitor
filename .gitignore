@@ -43,3 +43,6 @@ ehthumbs.db
 # ========== Docker Runtime Files (if used) ==========
 *.pid
 *.sock
+
+# ========== BD ==========
+imports/

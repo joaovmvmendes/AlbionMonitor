@@ -7,3 +7,30 @@ services:
     restart: on-failure
     env_file:
       - .env
+    depends_on:
+      - postgres
+    command: bash -c "export PYTHONPATH=/AlbionMonitor && python main.py"
+    volumes:
+      - .:/AlbionMonitor
+    networks:
+      - albionnet
+
+  postgres:
+    image: postgres:15
+    container_name: albion-postgres
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - albion_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - albionnet
+
+volumes:
+  albion_pgdata:
+
+networks:
+  albionnet:
+    driver: bridge

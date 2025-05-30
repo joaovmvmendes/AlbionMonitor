@@ -1,29 +1,19 @@
-# Base image with Python 3.11 (slim variant)
+# Base image with Python
 FROM python:3.11-slim
 
 # Set working directory
-WORKDIR /app
+WORKDIR /AlbionMonitor
 
-# Copy requirements and install Python packages
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy project files
+COPY . .
 
-# Install testing tools
-RUN pip install --no-cache-dir pytest coverage black flake8
+# Set environment variables (avoid .pyc, set UTF-8)
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV LANG=C.UTF-8
 
-# Install system dependencies (gcc required for some packages)
-RUN apt update && apt install -y gcc && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy application source code
-COPY main.py .
-COPY config/ config/
-COPY monitors/ monitors/
-COPY notifications/ notifications/
-COPY services/ services/
-COPY utils/ utils/
-COPY data/ data/
-COPY tests/ tests/
-
-# Default command: runs main monitor
-CMD ["python", "main.py"]
+# Default command
+CMD ["python", "AlbionMonitor/main.py"]
